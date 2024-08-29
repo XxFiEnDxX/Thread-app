@@ -49,6 +49,24 @@ const getPost = async(req, res)=>{
     }
 }
 
+const feedPost = async(req, res)=>{
+    try {
+        const userId = req.user._id
+        const user = await User.findById(userId)
+
+        if(!user){
+            return res.status(404).json({message: "User Not Found!😵"})
+        }
+        
+        const following = user.following
+        const feed = await Post.find({postedBy:{$in:following}}).sort({createdAt: -1});
+        
+        return res.status(200).json(feed)
+    } catch (error) {
+        return res.status(500).json({message: error.message});
+    }
+}
+
 const replyPost = async(req, res)=>{
     try {
         const postId = req.params.id
@@ -66,11 +84,11 @@ const replyPost = async(req, res)=>{
         const post = await Post.findById(postId)
         
         const reply = {userId, text, profilePic, username}
-        
+
         post.replies.push(reply)
         await post.save()
 
-        return res.status(200).json({message: "Reply added Successfully!✅"})
+        return res.status(200).json({message: "Reply added Successfully!✅",post:post})
     } catch (error) {
         return res.status(500).json({message: error.message});
     }
@@ -127,4 +145,4 @@ const deletePost = async(req, res)=>{
     }
 }
 
-export {createPost, getPost, deletePost, likeUnlikePost, replyPost}
+export {createPost, getPost, deletePost, likeUnlikePost, replyPost, feedPost}

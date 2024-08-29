@@ -4,10 +4,10 @@ import jwt from "jsonwebtoken";
 
 const protectRoute = async(req, res, next) => {
     try {
-        const token = req.cookies.jwt;
+        const token = req.cookies?.jwt;
 
         if(!token){
-            res.status(400).json({"message":"Invaild!"})
+            return res.status(400).json({"message":"No jwt In The Cookies!🍪"})
         }
 
         const decoded = jwt.verify(token,process.env.JWT_SECRET);
@@ -19,7 +19,7 @@ const protectRoute = async(req, res, next) => {
         next();
     } catch (error) {
         console.log("Error in protectRoute ", error.message);
-        res.status(500).json({message: error.message});
+        return res.status(500).json({message: error.message});
     }
 }
 
