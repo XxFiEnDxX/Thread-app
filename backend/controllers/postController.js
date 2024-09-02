@@ -1,29 +1,36 @@
 import Post from "../models/postModel.js";
 import User from "../models/userModel.js";
+import {v2 as cloudinary} from "cloudinary";
 
 const createPost = async(req, res)=>{
     try {
-        const {postedBy, text, img} = req.body;
-
+        const {postedBy, text} = req.body
+        let {img} = req.body
+        
         if(!postedBy){
-            return res.status(400).json({"message":"postedBy required!"})
+            return res.status(400).json({error:"postedBy required!"})
         }
         
         if(!(text || img)){
-            return res.status(400).json({"message":"either text or img required!"}) 
+            return res.status(400).json({error:"either text or img required!"}) 
         }
         
         const user = await User.findById(postedBy);
         if(!user){
-            return res.status(400).json({"message":"User not found!"}) 
+            return res.status(400).json({error:"User not found!"}) 
         }
         
         if(user._id.toString() !== req.user._id.toString()){
-            return res.status(400).json({"message":"unauthorized user!"}) 
+            return res.status(400).json({error:"unauthorized user!"}) 
         }
         
         if(text.length > 500){
-            return res.status(400).json({"message":"text too long!"}) 
+            return res.status(400).json({error:"text too long!"}) 
+        }
+
+        if(img){
+            const uploadedResponse = await cloudinary.uploader.upload(img);
+            img = uploadedResponse.secure_url;
         }
 
         const newPost = new Post({postedBy, text, img})
@@ -31,7 +38,7 @@ const createPost = async(req, res)=>{
 
         return res.status(200).json({ "message": "posted successfully!", post: newPost})
     } catch (error) {
-        res.status(500).json({message: error.message});
+        res.status(500).json({error: error.message});
     }
 }
 
@@ -40,12 +47,12 @@ const getPost = async(req, res)=>{
         const post = await Post.findById(req.params.id)
 
         if(!post){
-            return res.status(404).json({message: "Post Not Found!"})
+            return res.status(404).json({error: "Post Not Found!"})
         }
 
         return res.status(200).json({post})
     } catch (error) {
-        return res.status(500).json({message: error.message});
+        return res.status(500).json({error: error.message});
     }
 }
 
@@ -55,7 +62,7 @@ const feedPost = async(req, res)=>{
         const user = await User.findById(userId)
 
         if(!user){
-            return res.status(404).json({message: "User Not Found!😵"})
+            return res.status(404).json({error: "User Not Found!😵"})
         }
         
         const following = user.following
@@ -63,7 +70,7 @@ const feedPost = async(req, res)=>{
         
         return res.status(200).json(feed)
     } catch (error) {
-        return res.status(500).json({message: error.message});
+        return res.status(500).json({error: error.message});
     }
 }
 
@@ -78,7 +85,7 @@ const replyPost = async(req, res)=>{
         const username = req.user.username
 
         if(!text){
-            return res.status(200).json({message: "Reply is required!😾"})
+            return res.status(200).json({error: "Reply is required!😾"})
         }
 
         const post = await Post.findById(postId)
@@ -90,7 +97,7 @@ const replyPost = async(req, res)=>{
 
         return res.status(200).json({message: "Reply added Successfully!✅",post:post})
     } catch (error) {
-        return res.status(500).json({message: error.message});
+        return res.status(500).json({error: error.message});
     }
 }
 
@@ -99,7 +106,7 @@ const likeUnlikePost = async(req, res)=>{
         const post = await Post.findById(req.params.id)
 
         if(!post){
-            return res.status(404).json({message: "Post Not Found!"})
+            return res.status(404).json({error: "Post Not Found!"})
         }
         
         const isLiked = post.likes.includes(req.user._id);
@@ -116,7 +123,7 @@ const likeUnlikePost = async(req, res)=>{
             return res.status(200).json({message:"Post Liked!✅"})
         }
     } catch (error) {
-        return res.status(500).json({message: error.message});
+        return res.status(500).json({error: error.message});
     }
 }
 
@@ -125,23 +132,23 @@ const deletePost = async(req, res)=>{
         const post = await Post.findById(req.params.id)
 
         if(!post){
-            return res.status(404).json({message: "Post Not Found!😵"})
+            return res.status(404).json({error: "Post Not Found!😵"})
         }
         
         if(post.postedBy.toString() !== req.user._id.toString()){
-            return res.status(404).json({message: "Unauthorized User!💢"})
+            return res.status(404).json({error: "Unauthorized User!💢"})
         }
         
         const jobDone = await Post.findByIdAndDelete(req.params.id)
 
         if(!jobDone){
-            return res.status(500).json({message: "Not Able To Delete The Post!🤯"})
+            return res.status(500).json({error: "Not Able To Delete The Post!🤯"})
         }
         
         return res.status(200).json({message: "Post Deleted Successfully!✅"})
 
     } catch (error) {
-        res.status(500).json({message: error.message});
+        res.status(500).json({error: error.message});
     }
 }
 

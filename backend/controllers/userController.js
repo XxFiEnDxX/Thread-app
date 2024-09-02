@@ -1,6 +1,7 @@
 import User from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import generateTokenAndSetCookies from "../utils/helpers/generateTokenAndSetCookies.js";
+import { v2 as cloudinary } from "cloudinary";
 
 
 const getUserProfile = async(req, res)=>{
@@ -8,15 +9,14 @@ const getUserProfile = async(req, res)=>{
         const username = req.params.username;
         const user = await User.findOne({username}).select("-password -updatedAt");
         
-
         if(!user){
-            return res.status(400).json({"message": "User not found!"});
+            return res.status(400).json({error: "User not found!"});
         }
-        return res.status(200).json({user});
+        return res.status(200).json(user);
 
     } catch (error) {
         console.log("Error in getUserProfile", error.message);
-        return res.status(500).json({message: error.message});
+        return res.status(500).json({error: error.message});
     }
 }
 
@@ -26,7 +26,7 @@ const signupUser = async(req, res)=>{
         const user = await User.findOne({$or:[{email},{username}]});
         
         if(user){
-            return res.status(400).json({"message": "User Already Created! 💢"})
+            return res.status(400).json({error: "User Already Created! 💢"})
         }
         
         const salt = await bcrypt.genSalt(10);
@@ -42,13 +42,15 @@ const signupUser = async(req, res)=>{
                 name: newUser.name,
                 email: newUser.email,
                 username: newUser.username,
+                bio: newUser.bio,
+                profilePic: newUser.profilePic
             })
         }else{
-            return res.status(400).json({"message": "Invaild User data!❌"})
+            return res.status(400).json({error: "Invaild User data!❌"})
         }
     } catch (error) {
         console.log("Error in signupUser ", error.message);
-        res.status(500).json({message: error.message})
+        res.status(500).json({"error": error.message})
         
     }
 }
@@ -60,13 +62,13 @@ const loginUser = async(req, res)=>{
         const user = await User.findOne({username});
         
         if(!user){
-            return res.status(400).send("Invaild Username!👎")
+            return res.status(400).json({error:"Invaild Username!👎"})
         }
 
         const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
         if(!isPasswordCorrect){
-            return res.status(400).json({"message":"Your Password is Incorrect!🥲"})
+            return res.status(400).json({error:"Your Password is Incorrect!🥲"})
         }
         
         // generate JWT token
@@ -77,10 +79,12 @@ const loginUser = async(req, res)=>{
             _id: user._id,
             email: user.email,
             name: user.name,
+            bio: user.bio,
+            profilePic: user.profilePic
         })
     } catch (error) {
         console.log("Error in loginUser ", error.message);
-        res.status(500).json({message: error.message});
+        res.status(500).json({error: error.message});
     }
     
 }
@@ -92,7 +96,7 @@ const logoutUser = async(req, res)=>{
         res.status(200).clearCookie("jwt").json({"message": "User Logout successfully!✅"})
     } catch (error) {
         console.log("Error in logoutUser ", error.message);
-        res.status(500).json({message: error.message});
+        res.status(500).json({error: error.message});
     }
 }
 
@@ -104,10 +108,10 @@ const followUnFollowUsers = async(req, res)=>{
         const curUser = await User.findById(req.user._id);
         
         if(id === req.user._id.toString()){
-            return res.status(400).json({message: "cant follow yourself"});
+            return res.status(400).json({error: "cant follow yourself"});
         }
         if(!userToModify || !curUser){
-            return res.status(400).json({message: "Your not found!"});
+            return res.status(400).json({error: "Your not found!"});
         }
         
         const isFollowing = curUser.following.includes(id);
@@ -116,40 +120,49 @@ const followUnFollowUsers = async(req, res)=>{
             //unfollow
             await User.findByIdAndUpdate(id, {$pull:{followers:req.user._id}})
             await User.findByIdAndUpdate(req.user._id, {$pull:{following:id}})
-            return res.status(200).json({message: "User unfollow!"});
+            return res.status(200).json({message: "User unfollowed!🙄"});
         }else{
             // follow
             await User.findByIdAndUpdate(id, {$push: {followers: req.user._id} })
             await User.findByIdAndUpdate(req.user._id, { $push: {following: id} })
-            return res.status(200).json({message: "User follow!"});
+            return res.status(200).json({message: "User followed!😊"});
         }
         
     } catch (error) {
         console.log("Error in followUnFollowUsers ", error.message);
-        return res.status(500).json({message: error.message});
+        return res.status(500).json({error: error.message});
     }
 }
 
 const updateUser = async(req, res)=>{
     try {
 
-        const {name, email, username, password, profilePic, bio} = req.body
-        const userId = req.user._id; 
+        const {name, email, username, password, bio} = req.body
+        let {profilePic} = req.body;
 
+        const userId = req.user._id; 
         if(req.params.id !== userId.toString()){
-            return res.status(400).json({"message":"Cant update other user's profiles."})
+            return res.status(400).json({error:"Cant update other user's profiles."})
         }
         
         let user = await User.findById(userId);
         
         if(!user){
-            return res.status(500).json({"message":"User Not Found"})
+            return res.status(500).json({error:"User Not Found"})
         }
         
         if(password){
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(password,salt);
             user.password = hashedPassword;
+        }
+
+        if(profilePic){
+            if(user?.profilePic){
+                await cloudinary.uploader.destroy(user.profilePic.split("/").pop().split(".")[0]);
+            }
+            const uploadedResponse = await cloudinary.uploader.upload(profilePic);
+            profilePic = uploadedResponse.secure_url;
         }
         
         user.name = name || user.name;
@@ -159,12 +172,14 @@ const updateUser = async(req, res)=>{
         user.bio = bio || user.bio;
         
         user = await user.save();
+
+        user.password = null 
         
-        return res.status(200).json({"message":"Profile update successfully!✅"});  
+        return res.status(200).json(user);  
 
     } catch (error) {
         console.log("Error in updateUser ", error.message);
-        return res.status(500).json({message: error.message});
+        return res.status(500).json({error: error.message});
     }
 }
 

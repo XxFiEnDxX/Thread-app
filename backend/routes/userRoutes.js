@@ -10,6 +10,6 @@ userRoutes.post("/signup", signupUser);
 userRoutes.post("/login", loginUser);
 userRoutes.get("/logout", logoutUser);
 userRoutes.post("/follow/:id", protectRoute ,followUnFollowUsers);
-userRoutes.post("/update/:id", protectRoute ,updateUser);
+userRoutes.put("/update/:id", protectRoute ,updateUser);
 
 export default userRoutes;
