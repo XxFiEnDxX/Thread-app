@@ -143,16 +143,7 @@ export default function UpdateProfilePage() {
           />
         </FormControl>
         <Stack spacing={6} direction={['column', 'row']}>
-          <Button
-          type='submit'
-            bg={'red.400'}
-            color={'white'}
-            w="full"
-            _hover={{
-              bg: 'red.500',
-            }}>
-            Cancel
-          </Button>
+
           <Button
             bg={'green.400'}
             color={'white'}
@@ -163,7 +154,7 @@ export default function UpdateProfilePage() {
             type='submit'
             isLoading={updating}
             >
-            Submit
+            Save
           </Button>
         </Stack>
       </Stack>

@@ -21,11 +21,12 @@ import { useState } from "react"
 import useShowToast from "../hooks/useShowToast"
 
 const UserHeader = ({user}) => {
-    const curUser = useRecoilValue(userAtom)  // logged in user
     const showToast = useShowToast()
 
-    const [following , setFollowing] = useState(user.followers.includes(curUser._id))
+    const curUser = useRecoilValue(userAtom)  // logged in user
+
     const [updating, setUpdating] = useState(false);
+    const [following , setFollowing] = useState(user.followers.includes(curUser?._id))
     
     
     const toast = useToast()
@@ -44,13 +45,13 @@ const UserHeader = ({user}) => {
     }
 
     const handleFollowUnfollow = async() => {
+        setUpdating(true)
         try {
-            if(!curUser._id){
-                showToast("Error", "Please login to follow", "error")
+            if(!curUser?._id){
+                showToast("", "Please login to follow", "error")
                 return;
             }
-            setUpdating(true)
-            const res = await fetch(`/api/users/follow/${user._id}`,{
+            const res = await fetch(`/api/users/follow/${user?._id}`,{
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json"
@@ -60,21 +61,21 @@ const UserHeader = ({user}) => {
             const data = await res.json()
 
             if(data.error){
-                showToast("Error", error, "error")
+                showToast("", error, "error")
                 return 
             }
 
             
             if(following){
-                showToast("Success", data.message, "success")
+                showToast("", data.message, "success")
                 user.followers.pop();
             }else{
-                showToast("Success", data.message, "success")
-                user.followers.push(curUser._id);
+                showToast("", data.message, "success")
+                user.followers.push(curUser?._id);
             }
-                setFollowing(!following)
+            setFollowing(!following)
         } catch (error) {
-            showToast("Error", error, "error")
+            showToast("", error, "error")
         } finally {
             setUpdating(false)
         }
@@ -112,16 +113,15 @@ const UserHeader = ({user}) => {
         <Text>
         {user.bio}
         </Text>
-        {curUser._id == user._id && (
+        {curUser?._id == user?._id && (
             <Link as={RouteLink} to="/update">
                 <Button size={"sm"}>
                     Update Profile
                 </Button>
             </Link>
         )}
-        {curUser._id !== user._id && (
+        {curUser?._id !== user?._id && (
                 <Button size={"sm"} onClick={handleFollowUnfollow} isLoading={updating}>
-
                     {following? "Unfollow" : "Follow"}
                 </Button>
         )}

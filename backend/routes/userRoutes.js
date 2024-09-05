@@ -5,7 +5,7 @@ protectRoute
 
 const userRoutes = express.Router();
 
-userRoutes.get("/profile/:username", getUserProfile);
+userRoutes.get("/profile/:query", getUserProfile);
 userRoutes.post("/signup", signupUser);
 userRoutes.post("/login", loginUser);
 userRoutes.get("/logout", logoutUser);

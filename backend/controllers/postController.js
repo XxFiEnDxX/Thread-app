@@ -36,9 +36,26 @@ const createPost = async(req, res)=>{
         const newPost = new Post({postedBy, text, img})
         await newPost.save();
 
-        return res.status(200).json({ "message": "posted successfully!", post: newPost})
+        return res.status(200).json(newPost)
     } catch (error) {
         res.status(500).json({error: error.message});
+    }
+}
+
+const getUserPost = async(req, res)=>{
+    const username = req.params.username
+    try {
+        const user = await User.findOne({username})
+
+        if(!user){
+            return res.status(404).json({error: "User not found!"})
+        }
+
+        const posts = await Post.find({postedBy:user._id}).sort({createdAt:-1})
+
+        return res.status(200).json(posts)
+    } catch (error) {
+        return res.status(500).json({error: error.message});
     }
 }
 
@@ -50,7 +67,7 @@ const getPost = async(req, res)=>{
             return res.status(404).json({error: "Post Not Found!"})
         }
 
-        return res.status(200).json({post})
+        return res.status(200).json(post)
     } catch (error) {
         return res.status(500).json({error: error.message});
     }
@@ -81,7 +98,7 @@ const replyPost = async(req, res)=>{
         const {text} = req.body
 
         const userId = req.user._id
-        const profilePic = req.user.profilePic
+        const userProfilePic = req.user.profilePic
         const username = req.user.username
 
         if(!text){
@@ -90,12 +107,14 @@ const replyPost = async(req, res)=>{
 
         const post = await Post.findById(postId)
         
-        const reply = {userId, text, profilePic, username}
+        const reply = {userId, text, userProfilePic, username}
+        // console.log(reply);
+        
 
         post.replies.push(reply)
         await post.save()
 
-        return res.status(200).json({message: "Reply added Successfully!✅",post:post})
+        return res.status(200).json(reply)
     } catch (error) {
         return res.status(500).json({error: error.message});
     }
@@ -138,6 +157,10 @@ const deletePost = async(req, res)=>{
         if(post.postedBy.toString() !== req.user._id.toString()){
             return res.status(404).json({error: "Unauthorized User!💢"})
         }
+
+        if(post.img){
+            await cloudinary.uploader.destroy(post.img.split("/").pop().split(".")[0]);
+        }
         
         const jobDone = await Post.findByIdAndDelete(req.params.id)
 
@@ -152,4 +175,4 @@ const deletePost = async(req, res)=>{
     }
 }
 
-export {createPost, getPost, deletePost, likeUnlikePost, replyPost, feedPost}
+export {createPost, getPost, deletePost, likeUnlikePost, replyPost, feedPost, getUserPost}

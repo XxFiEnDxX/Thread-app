@@ -2,12 +2,20 @@ import User from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import generateTokenAndSetCookies from "../utils/helpers/generateTokenAndSetCookies.js";
 import { v2 as cloudinary } from "cloudinary";
+import mongoose from "mongoose";
+import Post from "../models/postModel.js";
 
 
 const getUserProfile = async(req, res)=>{
+    const query = req.params.query;
     try {
-        const username = req.params.username;
-        const user = await User.findOne({username}).select("-password -updatedAt");
+        let user;
+        if(mongoose.Types.ObjectId.isValid(query)){
+            user = await User.findOne({ _id: query }).select("-password -updatedAt");
+        }
+        else{
+            user = await User.findOne({ username: query }).select("-password -updatedAt");
+        }
         
         if(!user){
             return res.status(400).json({error: "User not found!"});
@@ -49,9 +57,7 @@ const signupUser = async(req, res)=>{
             return res.status(400).json({error: "Invaild User data!❌"})
         }
     } catch (error) {
-        console.log("Error in signupUser ", error.message);
         res.status(500).json({"error": error.message})
-        
     }
 }
 
@@ -172,6 +178,20 @@ const updateUser = async(req, res)=>{
         user.bio = bio || user.bio;
         
         user = await user.save();
+
+        // find all post with this user replies and update username and userProfilepic fields
+        await Post.updateMany(
+            {"replies.userId" : userId},
+            {
+                $set:{
+                    "replies.$[reply].username":user.username,
+                    "replies.$[reply].userProfilePic":user.profilePic
+                }
+            },
+            {
+                arrayFilters:[{"reply.userId":userId}]
+            }
+        )
 
         user.password = null 
         

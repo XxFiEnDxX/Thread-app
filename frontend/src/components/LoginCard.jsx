@@ -14,6 +14,7 @@ import {
     useColorModeValue,
     Link,
   } from '@chakra-ui/react'
+  
 import { useState } from 'react'
 import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons'
 import { useSetRecoilState } from 'recoil'
@@ -30,14 +31,17 @@ import useShowToast from '../hooks/useShowToast'
 
     const setAuthScreen = useSetRecoilState(authScreenAtom)
     const setUser = useSetRecoilState(userAtom)
+    const [loading, setLoading] = useState(false)
 
     const [inputs, setInputs] = useState({
       username: "",
       password: "",
     });
+
     const showToast = useShowToast();
     
     const handleLogin = async()=>{
+      setLoading(true)
       try {
         const res = await fetch("/api/users/login",{
           method: "POST",
@@ -49,7 +53,7 @@ import useShowToast from '../hooks/useShowToast'
 
         const data = await res.json()
         if(data.error){
-          showToast("Error", data.error, "error")
+          showToast("",data.error, "error")
           return ;
         }
         
@@ -58,6 +62,8 @@ import useShowToast from '../hooks/useShowToast'
         setUser(data)
       } catch (error) {
         showToast("Error", error, "error")
+      } finally {
+        setLoading(false)
       }
     }
     return (
@@ -105,7 +111,7 @@ import useShowToast from '../hooks/useShowToast'
               </FormControl>
               <Stack spacing={10} pt={2}>
                 <Button
-                  loadingText="Submitting"
+                  // loadingText=""
                   size="lg"
                   bg={'blue.400'}
                   color={'white'}
@@ -113,6 +119,7 @@ import useShowToast from '../hooks/useShowToast'
                     bg: 'blue.500',
                   }}
                   onClick={handleLogin}
+                  isLoading = {loading}
                   >
                   Log in
                 </Button>
