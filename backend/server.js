@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import connectDB from './db/connectDB.js';
 import userRoutes from './routes/userRoutes.js';
 import postRoutes from './routes/postRoutes.js';
+import messageRoutes from './routes/messageRoutes.js';
 
 import {v2 as cloudinary} from "cloudinary";
 
@@ -27,6 +28,7 @@ app.use(cookieParser());
 // Routes
 app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
+app.use("/api/messages", messageRoutes);
 
 app.get('/', (req, res)=>{
     res.send("/ Route is Working! 🐈")
