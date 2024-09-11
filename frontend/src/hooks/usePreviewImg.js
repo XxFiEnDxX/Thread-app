@@ -2,7 +2,7 @@ import { useState } from "react"
 import useShowToast from "./useShowToast"
 
 const usePreviewImg = () => {
-    const [imgURL, setimgURL] = useState(null)
+    const [imgURL, setImgURL] = useState(null)
     const showToast = useShowToast()
     const handleImgChange = (e) => {
         const file = e.target.files[0]
@@ -11,17 +11,17 @@ const usePreviewImg = () => {
             const reader = new FileReader();
 
             reader.onloadend = () =>{
-                setimgURL(reader.result);
+                setImgURL(reader.result);
             }
             reader.readAsDataURL(file)
         }
         else{
             showToast("Invaild File Type", "Please select an image file", "error")
-            setimgURL(null)
+            setImgURL(null)
         }
         console.log(file);
     }
-    return {handleImgChange, imgURL, setimgURL}
+    return {handleImgChange, imgURL, setImgURL}
 }
 
 export default usePreviewImg

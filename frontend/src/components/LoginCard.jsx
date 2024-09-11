@@ -57,7 +57,6 @@ import useShowToast from '../hooks/useShowToast'
           return ;
         }
         
-        console.log(data);
         localStorage.setItem("user-threads", JSON.stringify(data));
         setUser(data)
       } catch (error) {

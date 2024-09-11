@@ -88,7 +88,6 @@ export default function UpdateProfilePage() {
           <Stack direction={['column', 'row']} spacing={6}>
             <Center>
               <Avatar size="xl" src={imgURL || user.profilePic}>
-
               </Avatar>
             </Center>
             <Center w="full">

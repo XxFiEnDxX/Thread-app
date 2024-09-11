@@ -19,16 +19,12 @@ import userAtom from "../atoms/userAtom"
 import {Link as RouteLink} from "react-router-dom"
 import { useState } from "react"
 import useShowToast from "../hooks/useShowToast"
+import useFollowUnfollow from "../hooks/useFollowUnfollow"
 
 const UserHeader = ({user}) => {
     const showToast = useShowToast()
 
-    const curUser = useRecoilValue(userAtom)  // logged in user
-
-    const [updating, setUpdating] = useState(false);
-    const [following , setFollowing] = useState(user.followers.includes(curUser?._id))
-    
-    
+    const curUser = useRecoilValue(userAtom)  // logged in user    
     const toast = useToast()
 
     const copyURL = ()=>{
@@ -44,42 +40,9 @@ const UserHeader = ({user}) => {
         })
     }
 
-    const handleFollowUnfollow = async() => {
-        setUpdating(true)
-        try {
-            if(!curUser?._id){
-                showToast("", "Please login to follow", "error")
-                return;
-            }
-            const res = await fetch(`/api/users/follow/${user?._id}`,{
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json"
-                }
-            })
+    const {handleFollowUnfollow, following, updating} = useFollowUnfollow(user)
 
-            const data = await res.json()
 
-            if(data.error){
-                showToast("", error, "error")
-                return 
-            }
-
-            
-            if(following){
-                showToast("", data.message, "success")
-                user.followers.pop();
-            }else{
-                showToast("", data.message, "success")
-                user.followers.push(curUser?._id);
-            }
-            setFollowing(!following)
-        } catch (error) {
-            showToast("", error, "error")
-        } finally {
-            setUpdating(false)
-        }
-    }
   return (
     <VStack gap={4} alignItems={"start"}>
         <Flex justifyContent={"space-between"} w={"full"}>

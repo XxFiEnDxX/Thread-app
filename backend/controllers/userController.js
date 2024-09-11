@@ -75,6 +75,11 @@ const loginUser = async(req, res)=>{
         if(!isPasswordCorrect){
             return res.status(400).json({error:"Your Password is Incorrect!🥲"})
         }
+
+        if(user.isFrozen){
+            user.isFrozen = false;
+            await user.save();
+        }
         
         // generate JWT token
         await generateTokenAndSetCookies(user._id, res);
@@ -108,6 +113,9 @@ const logoutUser = async(req, res)=>{
 const followUnFollowUsers = async(req, res)=>{
     try {
         const {id} = req.params;
+        if(!id){
+            return res.status(400).json({error: "undefined user id"});
+        }
         
         const userToModify = await User.findById(id);
         const curUser = await User.findById(req.user._id);
@@ -202,6 +210,49 @@ const updateUser = async(req, res)=>{
     }
 }
 
+const getSuggestedUsers = async(req, res)=>{
+    try {
+        const userId = req.user._id
 
+        const userFollowings = await User.findById(userId).select("following");
+        
+        const users = await User.aggregate([
+            {
+                $match:{
+                    _id: {$ne: userId},
+                }
+            },
+            {
+                $sample:{
+                    size: 10,
+                } 
+            }
+        ])
+        const filteredUsers = users.filter(user => !userFollowings.following.includes(user._id))
+        const suggestedUsers = filteredUsers.slice(0,4)
 
-export {signupUser, loginUser, logoutUser, followUnFollowUsers, updateUser, getUserProfile}
+        suggestedUsers.forEach(user=>user.password=null)
+
+        res.status(200).json(suggestedUsers);
+    } catch (error) {
+        return res.status(500).json({error: error.message});
+    }
+}
+
+const freezeAccount = async(req, res)=>{
+    try {
+        const user = await User.findById(req.user._id);
+        if(!user){
+            return res.status(400).json({error: "User Not Found!"});
+        }
+
+        user.isFrozen = true;
+        await user.save();
+
+        res.status(200).json({messages: "success!"})
+    } catch (error) {
+        return res.status(500).json({error: error.message});
+    }
+}
+
+export {signupUser, loginUser, logoutUser, followUnFollowUsers, updateUser, getUserProfile, getSuggestedUsers, freezeAccount}

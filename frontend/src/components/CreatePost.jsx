@@ -25,7 +25,7 @@ const CreatePost = () => {
     const MAX_CHAR = 500;
     const { isOpen, onOpen, onClose } = useDisclosure()
     const [postText, setPostText] = useState("")
-    const {handleImgChange , imgURL, setimgURL} = usePreviewImg()
+    const {handleImgChange , imgURL, setImgURL} = usePreviewImg()
     const imgRef = useRef()
     const [Loading, setLoading] = useState(false);
 
@@ -39,8 +39,6 @@ const CreatePost = () => {
         let inputText = e.target.value;
 
         if(inputText.length > MAX_CHAR){
-            // const TruncatedText = inputText.slice(0, MAX_CHAR);
-            // setPostText(TruncatedText);
             inputText = postText;
             setRemainingChar(0);
         }else{
@@ -65,21 +63,24 @@ const CreatePost = () => {
             })
             
             const data = await res.json()
+            console.log(data);
             
-            setLoading(false)
+            
             if(data.error){
                 showToast("Error", data.error, "error")
                 return
             }
             if(username === user.username){
+                
                 setPosts([data,...posts])
+                console.log(posts);
             }
             showToast("Success", "Post created successfully!", "success");
             onClose()
             setPostText("")
-            setimgURL("")
+            setImgURL("")
         } catch (error) {
-            showToast("Error", error, "error")
+            showToast("", error.message, "error")
         } finally {
             setLoading(false)
         }
@@ -131,7 +132,7 @@ const CreatePost = () => {
             {imgURL && (
                 <Flex mt={5} w={"full"} position={"relative"}>
                     <Image src={imgURL} alt='Selected Image' />
-                    <CloseButton onClick={()=>setimgURL("")}
+                    <CloseButton onClick={()=>setImgURL("")}
                         bg={"gray.800"}
                         top={2}
                         right={2}

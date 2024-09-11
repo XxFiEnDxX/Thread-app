@@ -6,12 +6,12 @@ import connectDB from './db/connectDB.js';
 import userRoutes from './routes/userRoutes.js';
 import postRoutes from './routes/postRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
+import {app,server} from './socket/socket.js'
 
 import {v2 as cloudinary} from "cloudinary";
 
 dotenv.config();
 
-const app = express();
 const PORT = process.env.PORT || 5001;
 
 cloudinary.config({
@@ -34,4 +34,4 @@ app.get('/', (req, res)=>{
     res.send("/ Route is Working! 🐈")
 })
 
-app.listen(PORT, ()=>console.log(`server is listening to PORT: ${PORT} 😺`));
+server.listen(PORT, ()=>console.log(`server is listening to PORT: ${PORT} 😺`));

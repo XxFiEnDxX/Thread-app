@@ -1,11 +1,13 @@
 import { Flex, Avatar, useColorModeValue, Text, Image, Divider, SkeletonCircle, Skeleton } from '@chakra-ui/react'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Message from './Message.jsx'
 import MessageInput from './MessageInput.jsx'
 import useShowToast from '../hooks/useShowToast.js'
-import { selectedConversationAtom } from '../atoms/messageAtom.jsx'
-import { useRecoilValue } from 'recoil'
+import { conversationAtom, selectedConversationAtom } from '../atoms/messageAtom.jsx'
+import { useRecoilValue, useSetRecoilState } from 'recoil'
 import userAtom from '../atoms/userAtom.jsx'
+import { useSocket } from '../context/SocketContext.jsx'
+import messageSound from "../assets/sounds/message.mp3"
 
 const MessageContainer = () => {
     const showToast = useShowToast()
@@ -13,6 +15,74 @@ const MessageContainer = () => {
     const [loadingMessages, setLoadingMessages] = useState(true);
     const [messages, setMessages] = useState([]);
     const curUser = useRecoilValue(userAtom)
+    const {socket} = useSocket()
+    const setConversations= useSetRecoilState(conversationAtom)
+    
+    // for scroling
+    const messageEndRef = useRef(null)
+
+    useEffect(()=>{
+        messageEndRef.current?.scrollIntoView({behavior:"smooth"})
+    },[messages])
+
+    useEffect(()=>{
+        socket.on("newMessage",(message)=>{
+            if(selectedConversation._id === message.conversationId){
+                setMessages((prevMessages)=>[...prevMessages, message]);
+            }
+
+            if(document.hasFocus()){
+                const sound = new Audio(messageSound);
+                sound.play()
+            }
+
+            setConversations((prev)=>{
+                const updated = prev.map(conversation=>{
+                    if(conversation._id === message.conversationId ){
+                        return {
+                            ...conversation,
+                            lastMessage:{
+                                text: message.text,
+                                sender: message.sender,
+                            }
+                        }
+                    }
+                    return conversation
+                })
+                return updated
+            })
+        })
+
+        return ()=>socket.off("newMessage")
+    },[socket, selectedConversation, setConversations])
+
+    useEffect(()=>{
+        const lastMessageIsFromOtherUser = messages.length && messages[messages.length-1].sender !== curUser._id
+        if(lastMessageIsFromOtherUser){
+            socket.emit("markMessageAsSeen",{
+                conversationId: selectedConversation._id,
+                userId: selectedConversation.userId,
+            })
+        } 
+    
+        socket.on("messagesSeen", ({conversationId})=>{
+            if(selectedConversation._id === conversationId){
+                setMessages(prev =>{
+                    const updatedMessages = prev.map(message => {
+                        if(!message.seen){
+                            return {
+                                ...message,
+                                seen: true
+                            }
+                        }
+                        return message
+                    })
+                    return updatedMessages
+                })
+            }
+        })
+    },[socket, curUser._id, messages, selectedConversation])
+
     useEffect(()=>{
         const getMessages = async()=>{
             try {
@@ -65,7 +135,11 @@ const MessageContainer = () => {
 
             {!loadingMessages && Array.isArray(messages) &&
             messages.map((message) => (
-                <Message key={message._id} message={message} ownMessage={curUser._id === message.sender} />
+                <Flex key={message._id} direction={"column"} 
+                    ref={messages.length-1 === messages.indexOf(message)?messageEndRef:null}
+                >
+                    <Message key={message._id} message={message} ownMessage={curUser._id === message.sender} />
+                </Flex>
             ))
             }
         </Flex>

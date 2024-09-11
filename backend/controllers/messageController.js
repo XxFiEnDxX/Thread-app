@@ -1,12 +1,15 @@
 import Conversation from "../models/conversationModel.js";
 import Message from "../models/messageModel.js";
 import mongoose from "mongoose";
+import { v2 as cloudinary } from "cloudinary";
+import { getRecipientSocketId, io } from "../socket/socket.js";
 
 
 async function sendMessage(req, res) {
     try {
         const {recipientId, message} = req.body;
         const senderId = req.user._id;
+        let {image} = req.body;
 
         let conversation = await Conversation.findOne({
             participants: {$all: [senderId, recipientId]},
@@ -23,10 +26,16 @@ async function sendMessage(req, res) {
             await conversation.save();
         }
 
+        if(image){
+            const imgRes = await cloudinary.uploader.upload(image)
+            image = imgRes.secure_url;
+        }
+
         const newMessage = new Message({
             conversationId: conversation._id,
             sender: senderId,
             text: message,
+            image: image || "",
         })
 
         await Promise.all([
@@ -38,8 +47,12 @@ async function sendMessage(req, res) {
                 }
             })
         ])
-
-        res.status(200).json(newMessage)
+        
+        const recipientSocketId = getRecipientSocketId(recipientId);
+        if(recipientSocketId){
+            io.to(recipientSocketId).emit("newMessage", newMessage);
+        }
+        res.status(201).json(newMessage)
     } catch (error) {
         res.status(500).json({error: error.message});
     }
