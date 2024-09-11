@@ -19,9 +19,7 @@ const SettingsPage = () => {
             if(data.error){
                 return showToast("",data.error, "error");
             }
-            // if(data.success){
-            // }
-            
+
             logout()
             showToast("","Your account has been frozen", "success")
         } catch (error) {
