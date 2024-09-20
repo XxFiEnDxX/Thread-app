@@ -1,4 +1,4 @@
-import { AddIcon } from '@chakra-ui/icons'
+import { IoAdd } from "react-icons/io5";
 import { Button, useColorModeValue, Textarea, FormControl, Text, useDisclosure, Input, Flex, CloseButton, Image } from '@chakra-ui/react'
 import {
     Modal,
@@ -17,7 +17,7 @@ import { useRecoilState, useRecoilValue } from 'recoil'
 import userAtom from '../atoms/userAtom'
 import useShowToast from '../hooks/useShowToast'
 import postAtom from '../atoms/postAtom'
-import { useParams } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router-dom'
 
 const CreatePost = () => {
     const showToast = useShowToast();
@@ -33,8 +33,9 @@ const CreatePost = () => {
 
     const [remainingChar, setRemainingChar] = useState(MAX_CHAR);
 
-    const {username} = useParams()
-
+    const path = useLocation()
+    let username = path.pathname.substring(1,path.pathname.length)
+    
     const handleTextChange = (e)=>{
         let inputText = e.target.value;
 
@@ -63,15 +64,13 @@ const CreatePost = () => {
             })
             
             const data = await res.json()
-            console.log(data);
-            
             
             if(data.error){
                 showToast("Error", data.error, "error")
                 return
             }
-            if(username === user.username){
-                
+            
+            if(username === user.username || path.pathname === '/'){
                 setPosts([data,...posts])
                 console.log(posts);
             }
@@ -89,14 +88,11 @@ const CreatePost = () => {
   return (
     <>
         <Button 
-            position={"fixed"}
-            bottom={10}
-            right={5}
             bg={useColorModeValue("gray.300","gray.dark")}
             onClick={onOpen}
-            size={{base:"sm", sm:"md"}}
+            size={"md"}
             >
-            <AddIcon/>
+            <IoAdd size={26}/>
         </Button>
         <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />

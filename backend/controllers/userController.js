@@ -210,6 +210,28 @@ const updateUser = async(req, res)=>{
     }
 }
 
+const getSearchedUsers = async(req, res) => {
+    try {
+        const {input} = req.query;
+
+        // const similarUsers = await User.findOne({ username: input }).select("name username profilePic");
+        const similarUsers = await User.find({
+            $or: [
+              { username: { $regex: input, $options: 'i' } },
+              { name: { $regex: input, $options: 'i' } }
+            ]
+          }).select("name username profilePic")
+
+        if(!similarUsers){
+            return res.status(400).json({error: "User Not Found!"})
+        }
+
+        return res.status(200).send(similarUsers);
+    } catch (error) {
+        return res.status(500).json({error:error.message})
+    }
+}
+
 const getSuggestedUsers = async(req, res)=>{
     try {
         const userId = req.user._id
@@ -255,4 +277,4 @@ const freezeAccount = async(req, res)=>{
     }
 }
 
-export {signupUser, loginUser, logoutUser, followUnFollowUsers, updateUser, getUserProfile, getSuggestedUsers, freezeAccount}
+export {signupUser, loginUser, logoutUser, followUnFollowUsers, updateUser, getUserProfile, getSearchedUsers, getSuggestedUsers, freezeAccount}

@@ -33,7 +33,7 @@ const Messageinput = ({setMessages}) => {
   const [isSending, setIsSending] = useState(false)
 
   const handleSendMessage = async (e) => {
-    console.log("damn");
+    // console.log("damn");
     
       e.preventDefault()
       

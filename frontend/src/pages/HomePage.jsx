@@ -1,4 +1,4 @@
-import { Flex, Button, Spinner, Box} from '@chakra-ui/react'
+import { Flex, Button, Spinner, Box, Divider, useColorModeValue} from '@chakra-ui/react'
 import { Link } from 'react-router-dom'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import userAtom from '../atoms/userAtom'
@@ -7,6 +7,7 @@ import useShowToast from '../hooks/useShowToast'
 import Post from '../components/Post'
 import postAtom from '../atoms/postAtom'
 import SuggestedUser from '../components/SuggestedUser.jsx'
+
 
 
 const HomePage = () => {
@@ -41,11 +42,12 @@ const HomePage = () => {
     getFeed()
   },[showToast, setPosts])
   return (
-    <Flex gap={"10"} alignItems={"flex-start"}>
-      <Box flex={70}>
+    <Flex w={"full"}>
+      {/* <Box flex={70}> */}
+      <Box flex={100}>
           {
           loading && (
-            <Flex justifyContent={"center"}>
+            <Flex justifyContent={"center"} my={10}>
                 <Spinner size="xl"/>
             </Flex>)
           }
@@ -54,18 +56,9 @@ const HomePage = () => {
           }
           {
             posts.map((post)=>(
-              <Post key={post._id} post={post} postedBy={post.postedBy}/>
+              <Post key={post?._id} post={post} postedBy={post.postedBy} lastPost={posts[posts.length-1]._id}/>
             ))
           }
-      </Box>
-      <Box flex={30} 
-        display={{
-          base: 'none',
-          md: 'block'
-        }}
-      >
-        <SuggestedUser/>
-        
       </Box>
     </Flex>
   )

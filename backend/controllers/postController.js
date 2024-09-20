@@ -83,6 +83,7 @@ const feedPost = async(req, res)=>{
         }
         
         const following = user.following
+        following.push(user._id)
         const feed = await Post.find({postedBy:{$in:following}}).sort({createdAt: -1});
         
         return res.status(200).json(feed)

@@ -117,7 +117,7 @@ const MessageContainer = () => {
 
         <Divider/>
 
-        <Flex flexDir={"column"} gap={4} my={4} p={3} height={"400px"} overflowY={"auto"}>
+        <Flex flexDir={"column"} gap={4} my={4} p={3}  height={"50vh"} overflowY={"auto"}>
             {
                 loadingMessages && (
                     [0,1,2,3,4].map((_,i)=>(

@@ -1,4 +1,4 @@
-import { Flex, Spinner, useStatStyles } from "@chakra-ui/react"
+import { Box, Flex, Spinner, useStatStyles, Divider, useColorModeValue } from "@chakra-ui/react"
 import UserHeader from "../components/UserHeader.jsx"
 import UserPost from "../components/UserPost.jsx"
 import { useEffect, useState } from "react"
@@ -26,7 +26,7 @@ const UserPage = () => {
         const res = await fetch(`/api/posts/user/${username}`)
         const data = await res.json()
 
-        console.log(data);
+        // console.log(data);
         setPosts(data)
         
       } catch (error) {
@@ -61,7 +61,7 @@ const UserPage = () => {
     )}
     {
       posts.map((post)=>(
-        <Post key={post?._id} post={post} postedBy={post?.postedBy}/>
+        <Post key={post?._id} post={post} postedBy={post?.postedBy} lastPost={posts[posts.length-1]._id}/>
       ))
     }
     </>

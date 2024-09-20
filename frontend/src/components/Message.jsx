@@ -16,9 +16,9 @@ const Message = ({ownMessage, message }) => {
     <>
     {ownMessage?(
 
-        <Flex gap={2} alignSelf={"flex-end"}>
+        <Flex  gap={2} alignSelf={"flex-end"}>
             {message.text && (
-                <Flex maxW={"350px"} bg={"green.800"} p={1} borderRadius={"md"}>
+                <Flex  maxW={"350px"} bg={"green.800"} p={1} borderRadius={"md"}>
                     <Text  color={'white'}>
                         {message?.text}
                     </Text>

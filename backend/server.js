@@ -44,8 +44,8 @@ if(process.env.NODE_ENV === "production"){
 }
 
 
-// app.get('/', (req, res)=>{
-//     res.send("/ Route is Working! 🐈")
-// })
+app.get('/', (req, res)=>{
+    res.send("/ Route is Working! 🐈")
+})
 
 server.listen(PORT, ()=>console.log(`server is listening to PORT: ${PORT} 😺`));
