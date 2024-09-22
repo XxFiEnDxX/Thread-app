@@ -10,7 +10,6 @@ import messageRoutes from './routes/messageRoutes.js';
 import {app,server} from './socket/socket.js'
 
 import {v2 as cloudinary} from "cloudinary";
-import { log } from 'console';
 
 dotenv.config();
 
@@ -24,7 +23,7 @@ cloudinary.config({
 });
 
 connectDB() // DB connection
-app.use(express.json({limit: "10mb"}));
+app.use(express.json({limit: "5mb"}));
 app.use(express.urlencoded({extended: false}));
 app.use(cookieParser());
 
@@ -44,8 +43,8 @@ if(process.env.NODE_ENV === "production"){
 }
 
 
-app.get('/', (req, res)=>{
-    res.send("/ Route is Working! 🐈")
-})
+// app.get('/', (req, res)=>{
+//     res.send("/ Route is Working! 🐈")
+// })
 
 server.listen(PORT, ()=>console.log(`server is listening to PORT: ${PORT} 😺`));
