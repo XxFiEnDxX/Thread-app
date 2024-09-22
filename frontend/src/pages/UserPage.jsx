@@ -8,6 +8,9 @@ import Post from "../components/Post.jsx"
 import useGetUserProfile from "../hooks/useGetUserProfile.js"
 import { useRecoilState } from "recoil"
 import postAtom from "../atoms/postAtom.jsx"
+import NoThreadYet from "../components/NoThreadYet.jsx"
+import PageNotFound from "../components/PageNotFound.jsx"
+import { MdBrokenImage } from "react-icons/md";
 
 const UserPage = () => {
   const {user, loading} = useGetUserProfile()
@@ -48,12 +51,16 @@ const UserPage = () => {
     );
   }
 
-  if(!user && !loading)return <h1>User Not Found</h1>;
+  // if(!user && !loading)return <PageNotFound/>;
+  if(!user && !loading)return <Flex h={"300px"} justifyContent={"center"} alignItems={"center"} flexDir={"column"}>
+    <MdBrokenImage size={26} />
+      <h1>Page not found!</h1>
+  </Flex>;
 
   return (
     <>
     <UserHeader user={user}/>
-    {!fetching && posts?.length === 0 && <h1>No threads yet</h1>}
+    {!fetching && posts?.length === 0 && <NoThreadYet/>}
     {fetching && (
       <Flex justifyContent={"center"} my={12}>
         <Spinner size={"xl"}/>

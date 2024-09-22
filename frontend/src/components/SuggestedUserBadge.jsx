@@ -1,4 +1,4 @@
-import { Avatar, Box, Button, Flex, Text } from "@chakra-ui/react";
+import { Avatar, Box, Button, Flex, Text, useColorModeValue } from "@chakra-ui/react";
 import { Link, useNavigate } from "react-router-dom";
 import useFollowUnfollow from "../hooks/useFollowUnfollow";
 
@@ -13,11 +13,11 @@ const SuggestedUserBadge = ({user}) => {
 			}} cursor={"pointer"}>	
 			<Flex gap={2}>
 				<Avatar src={user.profilePic} />
-				<Box>
+				<Box color={useColorModeValue("black", "white")}>
 					<Text fontSize={"sm"} fontWeight={"bold"}>
 						{user.username}
 					</Text>
-					<Text color={"gray.light"} fontSize={"sm"}>
+					<Text fontSize={"sm"}>
 						{user.name}
 					</Text>
 				</Box>

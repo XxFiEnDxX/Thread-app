@@ -26,7 +26,7 @@ function App() {
         {/* <Container px={"0px"}  maxW={pathname === "/"? {base: "620px", md:"900px"} : "650px"}> */}
 
         <Container
-          my={20}
+          my={10}
           px={0}
           py={2}
           // maxW={pathname === "/"? {base: "620px", md:"900px"} : "650px"}
@@ -37,8 +37,9 @@ function App() {
           border={pathname === "/chat" ? "0px" : "2px"}
           bg={useColorModeValue("#ffffff", "#181818")}
           borderColor={useColorModeValue("#e5e5e5", "#323639")}
-        >
+          >
           {/* <LogoHeader/> */}
+          <Header/>
           <Routes>
             <Route
               path="/"
@@ -72,7 +73,6 @@ function App() {
               element={user ? <ChatPage /> : <Navigate to={"/auth"} />}
             />
           </Routes>
-          <Header />
         </Container>
       </Box>
     </>

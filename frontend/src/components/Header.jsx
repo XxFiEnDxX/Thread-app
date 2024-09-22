@@ -47,8 +47,8 @@ const Header = () => {
       justifyContent={"space-between"}
       alignItems={"center"}
       h={"full"}
-      w={"80px"}
-      py={8}
+      w={"70px"}
+      py={5}
       position={"fixed"}
       left={0}
       top={"50%"}
@@ -76,7 +76,7 @@ const Header = () => {
           justifyContent={"space-around"}
           alignItems={"center"}
           flexDir={"column"}
-          h={"360px"}
+          h={"320px"}
         >
           <Link as={RouterLink} to={"/"}>
             <AiFillHome

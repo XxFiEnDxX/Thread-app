@@ -5,7 +5,8 @@ import {
   useColorModeValue,
   Box,
   Avatar,
-  Text
+  Text,
+  Spinner
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import SuggestedUser from "../components/SuggestedUser";
@@ -36,16 +37,19 @@ const UserSearchPage = () => {
   const [searchedUser, setSearchedUser] = useState([]);
   const showToast = useShowToast();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const debouncedInput = useDebounce(input, 300);
 
   useEffect(() => {
     const handleUserSearch = async () => {
+      setLoading(true)
       if (!debouncedInput) {
+        setLoading(false)
         setSearchedUser([]); // Clear suggestions if input is empty
         return;
       }
-
+      
       try {
         console.log(debouncedInput);
         
@@ -59,6 +63,8 @@ const UserSearchPage = () => {
         setSearchedUser(data);
       } catch (error) {
         showToast("", error.message, "error");
+      } finally {
+        setLoading(false)
       }
     };
     handleUserSearch();
@@ -92,7 +98,8 @@ const UserSearchPage = () => {
         </Flex>
 
         <Flex py={5} gap={3} pl={5} w={"full"} direction={"column"}>
-          {searchedUser.map((user) => (
+          {loading && <Flex w={"full"} justifyContent={"center"} ><Spinner/></Flex>}
+          {!loading && searchedUser.map((user) => (
             <Flex
               key={user._id}
               gap={2}
@@ -106,10 +113,10 @@ const UserSearchPage = () => {
               <Flex gap={2}>
                 <Avatar size={"sm"} src={user.profilePic} />
                 <Box>
-                  <Text fontSize={"small"} fontWeight={"bold"}>
+                  <Text fontSize={"small"} fontWeight={"bold"} color={useColorModeValue("black","white")}>
                     {user.username}
                   </Text>
-                  <Text color={"gray.light"} fontSize={"x-small"}>
+                  <Text color={useColorModeValue("black","white")} fontSize={"x-small"}>
                     {user.name}
                   </Text>
                 </Box>
